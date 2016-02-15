@@ -1,0 +1,16 @@
+{
+    "name": "feliperamaral/array-table",
+    "description": "Render array like table",
+    "authors": [
+        {
+            "name": "Felipe Amaral",
+            "email": "feliperamaral80@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Fee\\": "src/Fee/"
+        }
+    }
+}
