@@ -18,15 +18,21 @@ class ArrayTable
      * );
      *
      *
-     * @param array $dados
+     * @param array $data
      * @param array $nameCols
      * @param array $options
      * @return string
      */
     private static $funcsNumArgs = array();
 
-    public static function render(array $dados, $nameCols = array(), $options = array(), $exportToExcel = false)
+    public static function render($data, $nameCols = array(), $options = array(), $exportToExcel = false)
     {
+        if ($data instanceof \Traversable) {
+            $data = iterator_to_array($data);
+        }
+        if (!is_array($data)) {
+            throw new \InvalidArgumentException('The argument "$data" is not a "array" or instance of "\Traversable". "$data" is: ' . gettype($data));
+        }
         $classes                           = 'table table-condensed table-bordered table-hover table-striped table-highlight';
         $attributes                        = array(
             'class' => $classes,
@@ -49,8 +55,15 @@ class ArrayTable
         $html    = '<table ' . self::arrayToAttributes($options['table']['attributes']) . '>';
         $html .= '<thead>';
 
+        $data = array_map(function($value) {
+            if ($value instanceof \Traversable) {
+                $value = iterator_to_array($value);
+            }
+            return $value;
+        }, $data);
+
         if (!$nameCols) {
-            $keys     = array_keys(end($dados));
+            $keys     = array_keys(end($data));
             $nameCols = array_combine($keys, $keys);
         }
         $html .= '<tr>';
@@ -66,8 +79,8 @@ class ArrayTable
         $html .= '</thead>';
 
         $html .= '<tbody>';
-        reset($dados);
-        foreach ($dados as $rowNum => $row):
+        reset($data);
+        foreach ($data as $rowNum => $row):
             $currentConfigs = array(
                 'tr' => array(
                     'attributes' => ''
