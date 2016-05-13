@@ -50,7 +50,7 @@ class ArrayTable
             )
         );
 
-        $options = array_merge_recursive($options, $optionsDefault);
+        $options = array_replace_recursive($optionsDefault, $options);
         $html    = '<table ' . self::arrayToAttributes($options['table']['attributes']) . '>';
         $html .= '<thead>';
 
