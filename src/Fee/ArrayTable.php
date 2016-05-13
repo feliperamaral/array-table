@@ -25,7 +25,7 @@ class ArrayTable
      */
     private static $funcsNumArgs = array();
 
-    public static function render($data, $nameCols = array(), $options = array(), $exportToExcel = false)
+    public static function render($data, $nameCols = array(), $options = array())
     {
         if ($data instanceof \Traversable) {
             $data = iterator_to_array($data);
@@ -37,8 +37,7 @@ class ArrayTable
         $attributes                        = array(
             'class' => $classes,
         );
-        if ($exportToExcel)
-            $attributes['data-p-tabletoexcel'] = true;
+
         $optionsDefault                    = array(
             'table'     => array(
                 'attributes' => $attributes
