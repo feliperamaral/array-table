@@ -24,6 +24,16 @@ class ArrayTable
      * @return string
      */
     private static $funcsNumArgs = array();
+    public static $optionsDefault = array(
+        'table' => array(
+            'attributes' => array(
+                'class' => '',
+            ),
+        ),
+        'callbacks' => array(
+            'fields' => array()
+        )
+    );
 
     public static function render($data, $nameCols = array(), $options = array())
     {
@@ -33,26 +43,8 @@ class ArrayTable
         if (!is_array($data)) {
             throw new \InvalidArgumentException('The argument "$data" is not a "array" or instance of "\Traversable". "$data" is: ' . gettype($data));
         }
-        $classes = 'table table-condensed table-bordered table-hover table-striped table-highlight';
-        $attributes = array(
-            'class' => $classes,
-        );
 
-        $optionsDefault = array(
-            'table' => array(
-                'attributes' => $attributes
-            ),
-            'countCol' => true,
-            'actions' => array(),
-            'callbacks' => array(
-                'fields' => array(
-                )
-            )
-        );
-
-        $options = array_replace_recursive($optionsDefault, $options);
-        $html = '<table ' . self::arrayToAttributes($options['table']['attributes']) . '>';
-        $html .= '<thead>';
+        $options = array_replace_recursive(self::$optionsDefault, $options);
 
         $data = array_map(function($value) {
             if ($value instanceof \Traversable) {
@@ -61,22 +53,30 @@ class ArrayTable
             return $value;
         }, $data);
 
+        $firstKeys = array_keys(current($data));
+
+        $html = '<table' . self::arrayToAttributes($options['table']['attributes']) . '>';
+        if ($nameCols !== null) {
+
+            if (!$nameCols) {
+                $nameCols = array_combine($firstKeys, $firstKeys);
+            }
+            $html .= '<thead>';
+            $html .= '<tr>';
+            foreach ($nameCols? : $firstKeys as $name => $colName) {
+                $html .= "<th>{$colName}</th>";
+            }
+            $html .= '</tr>';
+            $html .= '</thead>';
+        }
         if (!$nameCols) {
-            $keys     = array_keys(end($data));
-            $nameCols = array_combine($keys, $keys);
+            $nameCols = array_combine($firstKeys, $firstKeys);
         }
-        $html .= '<tr>';
-
-        foreach ($nameCols as $name => $colName) {
-            $html .= "<th>{$colName}</th>";
-        }
-
-        $html .= '</tr>';
-        $html .= '</thead>';
 
         $html .= '<tbody>';
+
         reset($data);
-        foreach ($data as $rowNum => $row):
+        foreach ($data as $row):
             $currentConfigs = array(
                 'tr' => array(
                     'attributes' => ''
@@ -85,17 +85,11 @@ class ArrayTable
             $contentTr = '';
 
             foreach ($nameCols as $name => $colName):
-                if ($colName === '#') {
-                    if (!$options['countCol']) {
-                        continue;
-                    }
-                    $content = ++$rowNum;
-                } else {
-                    $content = isset($row[$name]) ? $row[$name] : '';
-                    if (isset($options['values']['fields'][$name])) {
-                        $content = $options['values']['fields'][$name];
-                    }
+                $content = isset($row[$name]) ? $row[$name] : '';
+                if (isset($options['values']['fields'][$name])) {
+                    $content = $options['values']['fields'][$name];
                 }
+
                 $currentConfigs['td'] = array(
                     'attributes' => ''
                 );
@@ -117,7 +111,7 @@ class ArrayTable
                     }
                 }
                 $attributesTD = '';
-                if ($currentConfigs['td']['attributes']){
+                if ($currentConfigs['td']['attributes']) {
                     $attributesTD = self::arrayToAttributes($currentConfigs['td']['attributes']);
                 }
                 $contentTr .= "<td{$attributesTD}>{$content}</td>";
@@ -142,7 +136,7 @@ class ArrayTable
         foreach ($array as $name => $value) {
             $attributes [] = "$name=\"$value\"";
         }
-        if ($returnString){
+        if ($returnString) {
             return ' ' . implode(' ', $attributes);
         }
         return $attributes;
