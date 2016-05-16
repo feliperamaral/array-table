@@ -33,17 +33,17 @@ class ArrayTable
         if (!is_array($data)) {
             throw new \InvalidArgumentException('The argument "$data" is not a "array" or instance of "\Traversable". "$data" is: ' . gettype($data));
         }
-        $classes                           = 'table table-condensed table-bordered table-hover table-striped table-highlight';
-        $attributes                        = array(
+        $classes = 'table table-condensed table-bordered table-hover table-striped table-highlight';
+        $attributes = array(
             'class' => $classes,
         );
 
-        $optionsDefault                    = array(
-            'table'     => array(
+        $optionsDefault = array(
+            'table' => array(
                 'attributes' => $attributes
             ),
-            'countCol'  => true,
-            'actions'   => array(),
+            'countCol' => true,
+            'actions' => array(),
             'callbacks' => array(
                 'fields' => array(
                 )
@@ -51,7 +51,7 @@ class ArrayTable
         );
 
         $options = array_replace_recursive($optionsDefault, $options);
-        $html    = '<table ' . self::arrayToAttributes($options['table']['attributes']) . '>';
+        $html = '<table ' . self::arrayToAttributes($options['table']['attributes']) . '>';
         $html .= '<thead>';
 
         $data = array_map(function($value) {
@@ -71,9 +71,6 @@ class ArrayTable
             $html .= "<th>{$colName}</th>";
         }
 
-        if ($options['actions'])
-            $html .= '<th>Ações</th>';
-
         $html .= '</tr>';
         $html .= '</thead>';
 
@@ -85,7 +82,7 @@ class ArrayTable
                     'attributes' => ''
                 )
             );
-            $contentTr      = '';
+            $contentTr = '';
 
             foreach ($nameCols as $name => $colName):
                 if ($colName === '#') {
@@ -103,7 +100,7 @@ class ArrayTable
                     'attributes' => ''
                 );
                 if (isset($options['callbacks']['fields'][$name]) && is_callable($options['callbacks']['fields'][$name])) {
-                    $arguments   = array(
+                    $arguments = array(
                         &$content, &$row, &$currentConfigs
                     );
                     $numArgument = self::getNumArgs($options['callbacks']['fields'][$name]);
@@ -120,27 +117,12 @@ class ArrayTable
                     }
                 }
                 $attributesTD = '';
-                if ($currentConfigs['td']['attributes'])
+                if ($currentConfigs['td']['attributes']){
                     $attributesTD = self::arrayToAttributes($currentConfigs['td']['attributes']);
+                }
                 $contentTr .= "<td{$attributesTD}>{$content}</td>";
             endforeach;
 
-            if ($options['actions']) :
-                $contentTr .= '<td>';
-                foreach ($options['actions'] as $action):
-                    $attrs = isset($action['attrs']) ? $action['attrs'] : '';
-                    $url   = str_replace('??', $row[$options['primary']], $action['url']);
-                    $contentTr .= "<a href=\"{$url}\" {$attrs}>";
-
-                    if (isset($action['icon']))
-                        $contentTr .= "<i class=\"{$action['icon']}\"></i>";
-
-                    if (isset($action['html']))
-                        $contentTr .= $action['html'];
-                    $contentTr .= '</a> ';
-                endforeach;
-                $contentTr .= '</td>';
-            endif;
             $html .= '<tr' . self::arrayToAttributes($currentConfigs['tr']['attributes']) . ">{$contentTr}</tr>";
         endforeach;
 
@@ -160,8 +142,9 @@ class ArrayTable
         foreach ($array as $name => $value) {
             $attributes [] = "$name=\"$value\"";
         }
-        if ($returnString)
+        if ($returnString){
             return ' ' . implode(' ', $attributes);
+        }
         return $attributes;
     }
 
