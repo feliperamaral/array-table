@@ -55,7 +55,7 @@ class ArrayTable
             $firstKeys = array_keys(current($data));
             $nameCols = array_combine($firstKeys, $firstKeys);
         }
-
+        $nameCols = array_keys($nameCols);
         reset($data);
 
         $html = '<table' . self::arrayToAttr($options['table']['attributes']) . '>';
