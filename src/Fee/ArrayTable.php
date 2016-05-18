@@ -117,7 +117,7 @@ class ArrayTable
         $callbacks = array();
 
         if(isset($options['callbacks']['*'])){
-            $callbacks[] = $options['callbacks']['*'];
+            $callbacks = (array) $options['callbacks']['*'];
         }
 
         if (isset($options['callbacks']['fields'][$i])) {
