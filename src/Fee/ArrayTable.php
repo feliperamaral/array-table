@@ -5,12 +5,6 @@ namespace Fee;
 class ArrayTable
 {
 
-    /**
-     * @param array $data
-     * @param array $nameCols
-     * @param array $options
-     * @return string
-     */
     private static $funcsNumArgs = array();
     private static $commomDefault = array(
         'attributes' => array(),
@@ -40,7 +34,13 @@ class ArrayTable
         ),
     );
 
-    public static function render($data, $nameCols = array(), $options = array())
+    /**
+     * @param array|\Traversable $data
+     * @param array $cols
+     * @param array $options
+     * @return string
+     */
+    public static function render($data, $cols = array(), $options = array())
     {
         if ($data instanceof \Traversable) {
             $data = iterator_to_array($data);
@@ -51,23 +51,33 @@ class ArrayTable
 
         $options = self::normalizeOptions($options);
 
-        if (!$nameCols) {
-            $firstKeys = array_keys(current($data));
-            $nameCols = array_combine($firstKeys, $firstKeys);
+        if (!isset($data['thead']) && !isset($data['tbody']) && !isset($data['tfoot'])) {
+            $data = array(
+                'tbody' => $data
+            );
         }
-        $nameCols = array_keys($nameCols);
-        reset($data);
 
-        $html = '<table' . self::arrayToAttr($options['table']['attributes']) . '>';
-
-        if (sizeof($data) <= 3 && (isset($data['thead']) || isset($data['tbody']) || isset($data['tfoot']))) {
-            foreach ($data as $type => $dataTable) {
-                $html .= self::renderGroup($dataTable, $nameCols, $options[$type], $type);
+        if (!isset($data['thead'])) {
+            if ($cols) {
+                $data['thead'] = array($cols);
+                $cols = array_keys($cols);
+            } else if ($data['tbody']) {
+                $cols = array_keys(current($data['tbody']));
             }
-        } else {
-            $html .= self::renderGroup(array($nameCols), $nameCols, $options['thead'], 'thead');
-            $html .= self::renderGroup($data, $nameCols, $options['tbody'], 'tbody');
         }
+        $html = '<table' . self::arrayToAttr($options['table']['attributes']) . '>';
+        uksort($data, function($str) {
+            switch ($str) {
+                case 'thead': return 0;
+                case 'tbody': return 1;
+                case 'tfoot': return 2;
+                default: return 3;
+            }
+        });
+        foreach ($data as $type => $dataTable) {
+            $html .= self::renderGroup($dataTable, $cols, $options[$type], $type);
+        }
+
         return $html . '</table>';
     }
 
@@ -116,7 +126,7 @@ class ArrayTable
         $currentConfigs = $options;
         $callbacks = array();
 
-        if(isset($options['callbacks']['*'])){
+        if (isset($options['callbacks']['*'])) {
             $callbacks = (array) $options['callbacks']['*'];
         }
 
@@ -139,8 +149,6 @@ class ArrayTable
                 $content = $result;
             }
         }
-        
-//        var_dump($currentConfigs);
 
         return "<{$currentConfigs['typeOfCell']}" . self::arrayToAttr($currentConfigs['cellAttributes']) . '>'
                 . $content
@@ -184,7 +192,7 @@ class ArrayTable
             $attributes [] = "$name=\"$value\"";
         }
         if ($returnString) {
-            return ' ' . implode(' ', $attributes);
+            return $attributes ? ' ' . implode(' ', $attributes) : '';
         }
         return $attributes;
     }
@@ -210,4 +218,5 @@ class ArrayTable
         }
         return $ref->getNumberOfRequiredParameters();
     }
+
 }
