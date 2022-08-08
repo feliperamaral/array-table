@@ -138,10 +138,10 @@ class ArrayTable
                 continue;
             }
 
-            $arguments = array(&$content, &$row, &$currentConfigs);
+            $arguments = array(&$content, &$row, &$currentConfigs, $i);
             $numArgument = self::getNumArgs($callback);
 
-            array_splice($arguments, is_int($numArgument) ? $numArgument : 3);
+            array_splice($arguments, is_int($numArgument) ? $numArgument : 4);
 
             $result = call_user_func_array($callback, $arguments);
 
