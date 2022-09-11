@@ -89,7 +89,7 @@ class ArrayTable
      * @param string $type
      * @return string
      */
-    private static function renderGroup($data, $indices, $options, $type)
+    private static function renderGroup($data, $indices, &$options, $type)
     {
 
         $html = "<$type>";
@@ -98,24 +98,20 @@ class ArrayTable
             if ($row instanceof \Traversable) {
                 $row = iterator_to_array($row);
             }
-            $currentConfigs = array(
-                'tr' => array(
-                    'attributes' => ''
-                )
-            );
+
             $contentTr = '';
 
             foreach ($indices as $index) {
                 $contentTr .= self::renderContent($row, $index, $options);
             }
-
-            $html .= '<tr' . self::arrayToAttr($currentConfigs['tr']['attributes']) . ">{$contentTr}</tr>";
+            
+            $html .= '<tr' . self::arrayToAttr($options['rowAttributes']) . ">{$contentTr}</tr>";
         endforeach;
 
         return $html . "</$type>";
     }
 
-    private static function renderContent($row, $i, $options)
+    private static function renderContent($row, $i, &$options)
     {
         $content = isset($row[$i]) ? $row[$i] : '';
 
@@ -123,7 +119,6 @@ class ArrayTable
             $content = $options['values']['fields'][$i];
         }
 
-        $currentConfigs = $options;
         $callbacks = array();
 
         if (isset($options['callbacks']['*'])) {
@@ -138,7 +133,7 @@ class ArrayTable
                 continue;
             }
 
-            $arguments = array(&$content, &$row, &$currentConfigs, $i);
+            $arguments = array(&$content, &$row, &$options, $i);
             $numArgument = self::getNumArgs($callback);
 
             array_splice($arguments, is_int($numArgument) ? $numArgument : 4);
@@ -150,9 +145,9 @@ class ArrayTable
             }
         }
 
-        return "<{$currentConfigs['typeOfCell']}" . self::arrayToAttr($currentConfigs['cellAttributes']) . '>'
+        return "<{$options['typeOfCell']}" . self::arrayToAttr($options['cellAttributes']) . '>'
                 . $content
-                . "</{$currentConfigs['typeOfCell']}>";
+                . "</{$options['typeOfCell']}>";
     }
 
     private static function normalizeOptions($options)
